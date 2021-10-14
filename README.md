@@ -13,11 +13,12 @@
 
    - `experiment-bulls.R`: two non spherical distributions on 1000-dimensional sphere
 3. Two files contain the experiment on real data sets.
-   - `real-face`: analysis of JAFFE ([Japanese Female Facial Expression]([10.5281/zenodo.4029679](https://doi.org/10.5281/zenodo.4029679))) data set
+   - `real-face`: analysis of JAFFE ([Japanese Female Facial Expression](https://doi.org/10.5281/zenodo.4029679)) data set
    - `real-oz`: analysis of the famous Oz books corpus
 
 
 
 ## Reference
 
-- S. Kang, and H.-S. Oh. "Spherical Random Projection". Preprint.  Sep. 2021.
+- S. Kang, and H.-S. Oh. "Spherical Random Projection". Preprint.  Oct. 2021.
+
