@@ -1,0 +1,76 @@
+################################################################################
+### Real data - The JAFFE Dataset
+### * We assume the data set is placed in the `jaffe` folder.
+### * We do not contain the data set in this repository.
+### * The data set must be obtained via https://zenodo.org/record/3451524#.YWfL8i_kEUE , 
+### * with permission from the authors of the data set.
+################################################################################
+library(here); here()
+
+source("functions.R")
+library(tiff)
+library(pixmap)
+
+file.name <- list.files("jaffe")
+file.name <- file.name[endsWith(file.name,"tiff")]
+face <- matrix(0, ncol = 128*128, nrow = 213)
+for(i in 1:length(file.name)){
+  temp <- rowsum(pixmapGrey(readTIFF(paste0("jaffe/",file.name[i])))@grey, rep(1:128, each=2))/2
+  face[i, ] <- rowsum(t(temp), rep(1:128, each=2))/2
+}
+rownames(face) <- paste0(substr(file.name, 1, 2), "-",substr(file.name, 4,6))
+sel_index <- (substr(file.name,1,2)=="NM") | (substr(file.name,1,2)=="KL") | 
+  (substr(file.name,1,2)=="KR") | (substr(file.name,1,2)=="UY") | (substr(file.name,1,2)=="YM")
+exp_index <- (substr(file.name,4,5)=="HA") | (substr(file.name,4,5)=="NE") | 
+  (substr(file.name,4,5)=="SU")
+face <- face[sel_index & exp_index,]
+name_face <- substr(file.name,1,2)[sel_index & exp_index]
+dim(face) # 44 x 16384
+
+file.name[sel_index & exp_index]
+
+draw_index <- c(1,10,18,27,36,4,12,21,30,39,7,15,24,33,42)
+par(mfrow=c(3,6))
+par(mar=c(1,1,1,1))
+for(d in 1:15){
+  if(d %% 5 == 1){
+    par(mar=c(0,0,0,0))
+    plot(0,0,pch="",axes=F)
+    text(.75,0,c("HAP","NEU","SUR")[(d %/% 5) +1])
+    par(mar=c(1,1,1,1))
+  }
+  image((matrix(face[draw_index[d],],ncol=128,nrow=128)),col=grey(seq(0, 1, length = 256)),asp=1,ylim=c(1,0),axes=F)
+  if(d %/% 6 == 0) title(c("KL","KR","NM","UY","YM")[d %% 6])
+}
+par(mfrow=c(1,1))
+par(mar=c(5.1, 4.1, 4.1, 2.1))
+
+dist_face <- matrix(0,ncol=nrow(face),nrow=nrow(face))
+for(i in 1:(nrow(face)-1)){
+  for(j in (i+1):nrow(face)){
+    dist_face[i,j] = cor(face[i,],face[j,])
+  }
+}
+dist_face <- dist_face + t(dist_face)
+isoMDS(dist_face,k=2)$points |> plot(pch=as.numeric(as.factor(name_face)))
+
+sphere_raw <- face / sqrt(rowSums(face^2))
+
+mcperturb_accept_rate(X=sphere_raw, reduced_dim=201, B1=100, delta=0.1, tol=0.95)
+
+set.seed(0)
+res_raw <- mccluster_stability(sphere_raw, reduced_dim=201, B1=100, delta=0.1, 
+                             train_num=31, k_max=9, tol=0.95, method="skmeans")
+
+range_all = apply(res_raw[,1:8],2,cumsum)/1:100
+
+par(mfrow=c(1,2))
+plot(c(101,101,101,104,101,104,101,104),colMeans(res_raw),pch=as.character(2:9),
+     xlim=c(1,103), ylim=c(min(range_all),max(range_all)),
+     xlab="number of perturbed samples B", ylab="instability")
+matlines(1:100, apply(res_raw[,1:8],2,cumsum)/1:100, pch=20, col="black",lty=1)
+plot(2:9,colMeans(res_raw),type="b",xlab="number of clusters k",ylab="instability",pch=20) #select 5
+res_face_5 <- skmeans(sphere_raw, k=5, control = list(nruns=100))
+res_face_5$cluster
+
+# 6*12 plot
