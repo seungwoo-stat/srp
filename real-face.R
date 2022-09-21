@@ -58,9 +58,9 @@ sphere_raw <- face / sqrt(rowSums(face^2))
 
 mcperturb_accept_rate(X=sphere_raw, reduced_dim=201, B1=100, delta=0.1, tol=0.95)
 
-set.seed(1)
+set.seed(0)
 res_raw <- mccluster_stability(sphere_raw, reduced_dim=201, B1=100, delta=0.1, 
-                             train_num=31, k_max=9, tol=0.95)
+                             train_num=31, k_max=9, tol=0.95, seed=0)
 
 range_all = apply(res_raw[,1:8],2,cumsum)/1:100
 
@@ -70,6 +70,8 @@ plot(c(101,101,101,104,101,104,101,104),colMeans(res_raw),pch=as.character(2:9),
      xlab="Number of perturbed samples B", ylab="Instability")
 matlines(1:100, apply(res_raw[,1:8],2,cumsum)/1:100, pch=20, col="black",lty=1)
 plot(2:9,colMeans(res_raw),type="b",xlab="Number of clusters k",ylab="Instability",pch=20) #select 5
+
+set.seed(100)
 res_face_5 <- skmeans(sphere_raw, k=5, control = list(nruns=100))
 res_face_5$cluster
 

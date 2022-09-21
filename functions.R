@@ -4,6 +4,7 @@ library(skmeans)
 
 library(foreach)
 library(doParallel)
+library(doRNG)
 
 #' Geodesic distance between two points. 
 #' 
@@ -173,7 +174,7 @@ cluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol=1
 
 # cluster stability validation for spherical k-means clustering
 # uses multiple cores, on default, uses (maximum number of cores - 2)
-mccluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol=1){
+mccluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol=1, seed=123){
   N <- nrow(X)
   dim <- ncol(X)
   ori_dist <- matrix(0,ncol=N,nrow=N)
@@ -187,7 +188,7 @@ mccluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol
   cl <- parallel::makeCluster(detectCores()-2, outfile = "")
   registerDoParallel(cl)
   pb <- txtProgressBar(min = 1, max = B1, style = 3)
-  instability <- foreach(b=1:B1, .packages='skmeans', .combine = rbind) %dopar% {
+  instability <- foreach(b=1:B1, .packages='skmeans', .combine = rbind, .options.RNG=seed) %dorng% {
     setTxtProgressBar(pb, b) 
     instab_temp <- vector(length=k_max-1)
     
@@ -298,7 +299,7 @@ perturb_accept_rate <- function(X, reduced_dim, B1, delta, tol=1){
 
 # perturb_accept_rate function with multiple cores
 # on default, uses (maximum number of cores - 2)
-mcperturb_accept_rate <- function(X, reduced_dim, B1, delta, tol=1){
+mcperturb_accept_rate <- function(X, reduced_dim, B1, delta, tol=1, seed=123){
   N <- nrow(X)
   dim <- ncol(X)
   ori_dist <- matrix(0,ncol=N,nrow=N)
@@ -313,7 +314,7 @@ mcperturb_accept_rate <- function(X, reduced_dim, B1, delta, tol=1){
   cl <- parallel::makeCluster(detectCores()-2, outfile = "")
   registerDoParallel(cl)
   pb <- txtProgressBar(min = 1, max = B1, style = 3)
-  acceptance_rate <- foreach (b=1:B1, .combine=c, .verbose = F) %dopar% {
+  acceptance_rate <- foreach (b=1:B1, .combine=c, .verbose = F, .options.RNG=seed) %dorng% {
     # pb$tick()
     setTxtProgressBar(pb, b) 
     # Random matrix (dim x reduced_dim)
@@ -339,7 +340,7 @@ mcperturb_accept_rate <- function(X, reduced_dim, B1, delta, tol=1){
 
 # cluster stability validation for spectral clustering
 # uses multiple cores, on default, uses (maximum number of cores - 2)
-mccluster_stability_spec <- function(X, reduced_dim, B1, delta, train_num, k_max, tol=1){
+mccluster_stability_spec <- function(X, reduced_dim, B1, delta, train_num, k_max, tol=1, seed=123){
   N <- nrow(X)
   dim <- ncol(X)
   ori_dist <- matrix(0,ncol=N,nrow=N)
@@ -353,7 +354,7 @@ mccluster_stability_spec <- function(X, reduced_dim, B1, delta, train_num, k_max
   cl <- parallel::makeCluster(detectCores()-2, outfile = "")
   registerDoParallel(cl)
   pb <- txtProgressBar(min = 1, max = B1, style = 3)
-  instability <- foreach(b=1:B1, .combine = rbind) %dopar% {
+  instability <- foreach(b=1:B1, .combine = rbind, .options.RNG=seed) %dorng% {
     source("spectral.R")
     setTxtProgressBar(pb, b) 
     instab_temp <- vector(length=k_max-1)

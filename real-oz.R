@@ -58,7 +58,7 @@ sphere_raw <- sphere_raw / sqrt(rowSums(sphere_raw^2))
 mcperturb_accept_rate(sphere_raw, reduced_dim=201, B1=100, delta=0.1, tol=0.95)
 set.seed(0)
 res_raw <- mccluster_stability(sphere_raw, reduced_dim=201, B1=100, delta=0.1, 
-                             train_num=16, k_max=9, tol=0.95)
+                             train_num=16, k_max=9, tol=0.95, seed=0)
 
 range_all = apply(res_raw[,1:8],2,cumsum)/1:100
 par(mfrow=c(1,2))
@@ -69,5 +69,5 @@ matlines(1:100, apply(res_raw[,1:8],2,cumsum)/1:100, pch=20, col="black",lty=1)
 plot(2:9,colMeans(res_raw),type="b",xlab="Number of clusters k",ylab="Instability",pch=20) #select 2
 
 set.seed(100)
-res_Oz_2 <- skmeans(sphere_raw, k=2, control = list(nruns=100))
+res_Oz_2 <- skmeans(sphere_raw, k=2, control = list(nruns=200))
 res_Oz_2$cluster # no misclassification
