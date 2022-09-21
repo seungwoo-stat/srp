@@ -55,3 +55,29 @@ for(rep in 1:50){
 }
 
 final_result
+
+## plot ########################################################################
+
+N <- 400
+distmat <- matrix(0,ncol=N,nrow=N)
+for(i in 1:(N-1)){
+  for(j in (i+1):N){
+    distmat[i,j] <- acos(sum(bull[i,]*bull[j,]))
+  }
+}
+distmat <- distmat + t(distmat)
+
+res_1 <- mccluster_stability(X=bull, reduced_dim = 151, B1=100, delta=0.1, train_num = 266, k_max=9, tol=0.95)
+res_2 <- mccluster_stability_spec(X=bull, reduced_dim = 151, B1=100, delta=0.1, train_num = 266, k_max=9, tol=0.95)
+
+par(mfrow=c(1,2))
+plot(isoMDS(distmat[1:400,1:400],k=2)$points,pch=ifelse(res_spec$cluster==1,"-","+"),
+     xlab="MDS 1", ylab="MDS 2",main="Multidimensional scaling plot")
+plot(2:9,colMeans(res_2),type="b",ylim=range(colMeans(res_1)),
+     xlab="Number of clusters k",ylab="Instability",pch=20,
+     main="Instability plot for two clustering algorithms") 
+lines(2:9, colMeans(res_1),lty=2)
+points(2:9, colMeans(res_1),pch=20)
+legend("topright",lty=1:2,legend=c("spectral","spherical k-means"),bty="n")
+
+
