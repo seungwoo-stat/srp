@@ -6,6 +6,7 @@ library(here); here()
 source("functions.R")
 library(tm)
 library(corpus)
+library(latex2exp)
 
 # Download the text files, 
 # trim header and footer added by the project Guterberg.
@@ -68,6 +69,62 @@ plot(c(101,101,101,102.5,101,98,101,104),colMeans(res_raw),pch=as.character(2:9)
 matlines(1:100, apply(res_raw[,1:8],2,cumsum)/1:100, pch=20, col="black",lty=1)
 plot(2:9,colMeans(res_raw),type="b",xlab="Number of clusters k",ylab="Instability",pch=20) #select 2
 
-set.seed(100)
-res_Oz_2 <- skmeans(sphere_raw, k=2, control = list(nruns=200))
-res_Oz_2$cluster # no misclassification
+# 6*12 plot
+
+
+
+######### how many correctly partitioned? ######################################
+
+set.seed(0)
+res_Oz_mat <- matrix(ncol=100,nrow=24)
+for(i in 1:100){
+  res_Oz_2 <- skmeans(sphere_raw, k=2, control = list(nruns=200))
+  res_Oz_mat[,i] <- res_Oz_2$cluster 
+}
+sapply(1:100, \(i) var(res_Oz_mat[1:14,i]) == 0 && var(res_Oz_mat[15:24,i]) == 0) |> sum()
+
+
+
+########## additional experiments for varying (d,epsilon) ######################
+
+for(d in c(200,300,400)){
+  for(epsilon in c(0.1,0.2)){
+    message(paste0("d=",d,", epsilon=",epsilon))
+    print(mcperturb_accept_rate(X=sphere_raw, reduced_dim=d+1, B1=100, delta=epsilon, tol=0.95))
+  }
+}
+
+res_raw <- list()
+i <- 1
+for(d in c(200,300,400)){
+  for(epsilon in c(0.1,0.2)){
+    res_raw[[i]] <- mccluster_stability(sphere_raw, reduced_dim=d+1, B1=100, delta=epsilon, 
+                                   train_num=16, k_max=9, tol=0.95, seed=0)
+    i <- i+1
+  }
+}
+
+par(mfrow=c(3,2))
+
+i <- 1
+for(d in c(200,300,400)){
+  for(epsilon in c(0.1,0.2)){
+    plot(2:9,colMeans(res_raw[[i]]),type="b",xlab="Number of clusters k",ylab="Instability",pch=20) 
+    title(TeX(paste0("d=",d,", $\\epsilon$=$",epsilon,"$")))
+    i <- i+1
+  }
+} #12*12 plot
+
+
+# X <- sphere_raw
+# N <- nrow(X)
+# dim <- ncol(X)
+# ori_dist <- matrix(0,ncol=N,nrow=N)
+# for(i in 1:(N-1)){
+#   for(j in (i+1):N){
+#     ori_dist[i,j] <- DIST(X[i,],X[j,])
+#   }
+# }
+# ori_dist <- ori_dist + t(ori_dist)
+# hist(ori_dist[ori_dist != 0],breaks=50,freq=FALSE,xlab="Pairwise distances")
+# summary(ori_dist[ori_dist!= 0])

@@ -67,6 +67,8 @@ for(i in 1:(N-1)){
 }
 distmat <- distmat + t(distmat)
 
+mcperturb_accept_rate(X=bull, reduced_dim=151, B1=100, delta=0.1, tol=0.95)
+
 res_1 <- mccluster_stability(X=bull, reduced_dim = 151, B1=100, delta=0.1, train_num = 266, k_max=9, tol=0.95, seed=0)
 res_2 <- mccluster_stability_spec(X=bull, reduced_dim = 151, B1=100, delta=0.1, train_num = 266, k_max=9, tol=0.95, seed=0)
 

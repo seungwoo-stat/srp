@@ -40,7 +40,7 @@ for(rep in 1:50){
   distmat_vmf5 <- distmat_vmf5 + t(distmat_vmf5)
   
   res_vmf5 <- mccluster_stability(vmf5, reduced_dim=401, B1=100, delta=0.1, 
-                                  train_num=130, tol=0.95, k_max=9, method="skmeans")
+                                  train_num=130, tol=0.95, k_max=9)
   final_result[rep,1] <- which.min(colMeans(res_vmf5)) + 1
   final_result[rep,2] <- (NbClust(vmf5, distance = NULL, diss = distmat_vmf5, max.nc = 10, method = "kmeans", index = "gap")$Best.nc)[1]
   final_result[rep,3] <- (NbClust(vmf5, distance = NULL, diss = distmat_vmf5, max.nc = 10, method = "kmeans", index = "ch")$Best.nc)[1]

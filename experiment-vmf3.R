@@ -34,9 +34,9 @@ for(rep in 1:50){
   }
   distmat_vmf3 <- distmat_vmf3 + t(distmat_vmf3)
 
-  mcperturb_accept_rate(vmf3, reduced_dim=201, B1=100, delta=0.2, tol=0.99)
-  res_vmf3 <- mccluster_stability(vmf3, reduced_dim=201, B1=100, delta=0.2, 
-                                  train_num=100, tol=0.99, k_max=9, method="skmeans")
+  # mcperturb_accept_rate(vmf3, reduced_dim=401, B1=100, delta=0.1, tol=0.99)
+  res_vmf3 <- mccluster_stability(vmf3, reduced_dim=401, B1=100, delta=0.1, 
+                                  train_num=100, tol=0.99, k_max=9)
   final_result[rep,1] <- which.min(colMeans(res_vmf3)) + 1
   
   final_result[rep,2] <- (NbClust(vmf3, distance = NULL, diss = distmat_vmf3, max.nc = 10, method = "kmeans", index = "gap")$Best.nc)[1]

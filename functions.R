@@ -128,7 +128,7 @@ cluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol=1
         }
       }
       red_dist1 <- red_dist1 + t(red_dist1)
-      if(mean(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)>=tol) break()
+      if((sum(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)-N)/(N^2-N)>=tol) break()
       R1 <- matrix(rnorm(dim*reduced_dim),nrow=dim, ncol=reduced_dim)
       red_data1 <- X %*% R1 / sqrt(rowSums((X %*% R1)^2))
     }
@@ -140,7 +140,7 @@ cluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol=1
         }
       }
       red_dist2 <- red_dist2 + t(red_dist2)
-      if(mean(red_dist2 <= ori_dist+delta & red_dist2 >= ori_dist-delta)>=tol) break()
+      if((sum(red_dist2 <= ori_dist+delta & red_dist2 >= ori_dist-delta)-N)/(N^2-N)>=tol) break()
       R2 <- matrix(rnorm(dim*reduced_dim),nrow=dim, ncol=reduced_dim)
       red_data2 <- X %*% R2 / sqrt(rowSums((X %*% R2)^2))
     }
@@ -208,7 +208,7 @@ mccluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol
         }
       }
       red_dist1 <- red_dist1 + t(red_dist1)
-      if(mean(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)>=tol) break()
+      if((sum(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)-N)/(N^2-N)>=tol) break()
       R1 <- matrix(rnorm(dim*reduced_dim),nrow=dim, ncol=reduced_dim)
       red_data1 <- X %*% R1 / sqrt(rowSums((X %*% R1)^2))
     }
@@ -220,7 +220,7 @@ mccluster_stability <- function(X, reduced_dim, B1, delta, train_num, k_max, tol
         }
       }
       red_dist2 <- red_dist2 + t(red_dist2)
-      if(mean(red_dist2 <= ori_dist+delta & red_dist2 >= ori_dist-delta)>=tol) break()
+      if((sum(red_dist2 <= ori_dist+delta & red_dist2 >= ori_dist-delta)-N)/(N^2-N)>=tol) break()
       R2 <- matrix(rnorm(dim*reduced_dim),nrow=dim, ncol=reduced_dim)
       red_data2 <- X %*% R2 / sqrt(rowSums((X %*% R2)^2))
     }
@@ -292,10 +292,11 @@ perturb_accept_rate <- function(X, reduced_dim, B1, delta, tol=1){
       }
     }
     red_dist1 <- red_dist1 + t(red_dist1)
-    acceptance_rate[b] <- (mean(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)>=tol)
+    acceptance_rate[b] <- ((sum(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)-N)/(N^2-N)>=tol)
   }
-  return(mean(acceptance_rate))
+  return(mean(acceptance_rate <= delta))
 }
+
 
 # perturb_accept_rate function with multiple cores
 # on default, uses (maximum number of cores - 2)
@@ -329,11 +330,48 @@ mcperturb_accept_rate <- function(X, reduced_dim, B1, delta, tol=1, seed=123){
       }
     }
     red_dist1 <- red_dist1 + t(red_dist1)
-    mean(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)>=tol
+    (sum(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)-N)/(N^2-N)>=tol
   }
   close(pb)
   stopCluster(cl)
   return(mean(acceptance_rate))
+}
+
+mcperturb_mean_distortion <- function(X, reduced_dim, B1, delta, tol=1, seed=123){
+  N <- nrow(X)
+  dim <- ncol(X)
+  ori_dist <- matrix(0,ncol=N,nrow=N)
+  for(i in 1:(N-1)){
+    for(j in (i+1):N){
+      ori_dist[i,j] <- DIST(X[i,],X[j,])
+    }
+  }
+  ori_dist <- ori_dist + t(ori_dist)
+  
+  mean_distortion <- vector(length=B1)
+  cl <- parallel::makeCluster(detectCores()-2, outfile = "")
+  registerDoParallel(cl)
+  pb <- txtProgressBar(min = 1, max = B1, style = 3)
+  mean_distortion <- foreach (b=1:B1, .combine=c, .verbose = F, .options.RNG=seed) %dorng% {
+    # pb$tick()
+    setTxtProgressBar(pb, b) 
+    # Random matrix (dim x reduced_dim)
+    R1 <- matrix(rnorm(dim*reduced_dim),nrow=dim, ncol=reduced_dim)
+    red_data1 <- X %*% R1 / sqrt(rowSums((X %*% R1)^2))
+    
+    # acceptance rate
+    red_dist1 <- matrix(0,ncol=N,nrow=N)
+    for(i in 1:(N-1)){
+      for(j in (i+1):N){
+        red_dist1[i,j] <- acos(sum(red_data1[i,]*red_data1[j,]))
+      }
+    }
+    red_dist1 <- red_dist1 + t(red_dist1)
+    sum(abs(red_dist1 - ori_dist))/(N^2-N)
+  }
+  close(pb)
+  stopCluster(cl)
+  return(c(mean(mean_distortion), sd(mean_distortion)))
 }
 
 ############################
@@ -375,7 +413,7 @@ mccluster_stability_spec <- function(X, reduced_dim, B1, delta, train_num, k_max
         }
       }
       red_dist1 <- red_dist1 + t(red_dist1)
-      if(mean(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)>=tol) break()
+      if((sum(red_dist1 <= ori_dist+delta & red_dist1 >= ori_dist-delta)-N)/(N^2-N)>=tol) break()
       R1 <- matrix(rnorm(dim*reduced_dim),nrow=dim, ncol=reduced_dim)
       red_data1 <- X %*% R1 / sqrt(rowSums((X %*% R1)^2))
     }
@@ -387,7 +425,7 @@ mccluster_stability_spec <- function(X, reduced_dim, B1, delta, train_num, k_max
         }
       }
       red_dist2 <- red_dist2 + t(red_dist2)
-      if(mean(red_dist2 <= ori_dist+delta & red_dist2 >= ori_dist-delta)>=tol) break()
+      if((sum(red_dist2 <= ori_dist+delta & red_dist2 >= ori_dist-delta)-N)/(N^2-N)>=tol) break()
       R2 <- matrix(rnorm(dim*reduced_dim),nrow=dim, ncol=reduced_dim)
       red_data2 <- X %*% R2 / sqrt(rowSums((X %*% R2)^2))
     }
