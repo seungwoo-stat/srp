@@ -81,7 +81,7 @@ plot(2:9,colMeans(res_raw),type="b",xlab="Number of clusters k",ylab="Instabilit
 set.seed(0)
 res_face_mat <- matrix(ncol=100,nrow=44)
 for(i in 1:100){
-  res_face_2 <- skmeans(sphere_raw, k=5, control = list(nruns=200))
+  res_face_2 <- skmeans(sphere_raw, k=5, control = list(nruns=1))
   res_face_mat[,i] <- res_face_2$cluster 
 }
 

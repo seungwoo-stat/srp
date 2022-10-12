@@ -78,7 +78,7 @@ plot(2:9,colMeans(res_raw),type="b",xlab="Number of clusters k",ylab="Instabilit
 set.seed(0)
 res_Oz_mat <- matrix(ncol=100,nrow=24)
 for(i in 1:100){
-  res_Oz_2 <- skmeans(sphere_raw, k=2, control = list(nruns=200))
+  res_Oz_2 <- skmeans(sphere_raw, k=2, control = list(nruns=1))
   res_Oz_mat[,i] <- res_Oz_2$cluster 
 }
 sapply(1:100, \(i) var(res_Oz_mat[1:14,i]) == 0 && var(res_Oz_mat[15:24,i]) == 0) |> sum()
