@@ -40,12 +40,12 @@ urls <- c("https://www.gutenberg.org/files/55/55-0.txt",             #B01
           "https://www.gutenberg.org/cache/epub/56085/pg56085.txt",  #T32
           "https://www.gutenberg.org/cache/epub/55806/pg55806.txt")  #T33
 dir.create(file.path("Oz")) #create a new folder
-for(i in 8:length(filenames)){ #trim header and footer of each text and save it locally
+for(i in 1:length(filenames)){ #trim header and footer of each text and save it locally
   raw <- readLines(urls[i], encoding = "UTF-8")
   start <- grep("^\\*\\*\\* START OF TH", raw) + 1
   if(length(start)==0) start <- grep("^\\*\\*\\*START OF TH", raw) + 1
-  stop <- grep("^\\*\\*\\* END OF TH", raw) - 1
-  if(length(stop)==0) stop <- grep("^\\*\\*\\*END OF TH", raw) - 1
+  stop <- grep("*\\*\\*\\* END OF TH", raw) - 1
+  if(length(stop)==0) stop <- grep("*\\*\\*\\*END OF TH", raw) - 1
   lines <- raw[start:stop]
   write(lines, paste0("Oz/",filenames[i],".txt")) 
 }
