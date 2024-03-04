@@ -56,6 +56,13 @@ DTM_raw <- DocumentTermMatrix(raw, control = list(removePunctuation = TRUE, stop
 sphere_raw <- as.matrix(DTM_raw)
 dim(sphere_raw) #24 x 24468
 sphere_raw <- sphere_raw / sqrt(rowSums(sphere_raw^2))
+
+
+# sphere_raw contains 24 sphere-valued vectors, constructed from the Oz books.
+# However, this can differ based on the versions of the packages used.
+# Below, we provide the sphere_raw matrix object that we used in our simulation.
+sphere_raw <- readRDS("oz_sphere.rds")
+
 mcperturb_accept_rate(sphere_raw, reduced_dim=201, B1=100, delta=0.1, tol=0.95)
 set.seed(0)
 res_raw <- mccluster_stability(sphere_raw, reduced_dim=201, B1=100, delta=0.1, 
