@@ -20,5 +20,4 @@
 
 ## Reference
 
-- S. Kang, and H.-S. Oh. "Spherical Random Projection". Preprint.  Oct. 2021.
-
+-   Seungwoo Kang and Hee-Seok Oh. (2024) Spherical Random Projection. *Journal of the Royal Statistical Society Series B: Statistical Methodology*. To appear.
