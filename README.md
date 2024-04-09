@@ -20,4 +20,4 @@
 
 ## Reference
 
--   Seungwoo Kang and Hee-Seok Oh. (2024) Spherical Random Projection. *Journal of the Royal Statistical Society Series B: Statistical Methodology*. To appear.
+-   Seungwoo Kang and Hee-Seok Oh. (2024) [Spherical Random Projection](https://doi.org/10.1093/jrsssb/qkae035). *Journal of the Royal Statistical Society Series B: Statistical Methodology*. In press.
